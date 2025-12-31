@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arkanoid - Modern Web Edition</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+        <div id="ui-layer" class="hidden">
+            <div id="stats-group">
+                <div>SCORE: <span id="score">0</span></div>
+                <div>LEVEL: <span id="level">1</span></div>
+                <div>LIVES: <span id="lives">3</span></div>
+            </div>
+            <button id="pause-btn" onclick="game.togglePause()">II</button>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="overlay">
+            <h1 class="pulse">ARKANOID</h1>
+            <p class="message">Break all blocks to win!</p>
+            <div class="menu-buttons">
+                <button class="btn" onclick="game.selectMode('classic')">CLASSIC MODE</button>
+                <button class="btn" style="background: linear-gradient(45deg, #ff00ff, #00ffff);"
+                    onclick="game.selectMode('modern')">MODERN MODE</button>
+
+                <button id="auth-btn" class="btn" style="background: var(--accent-color); margin-top: 10px;"
+                    onclick="game.showAuthMenu()">LOGIN / SIGNUP</button>
+                <div id="login-hint" class="message" style="font-size: 0.6rem; color: var(--accent-color); margin: 0;">
+                    TO SAVE GAME LOGIN TO YOUR ACCOUNT</div>
+                <button id="logout-btn" class="btn hidden" style="background: #555;"
+                    onclick="game.logout()">LOGOUT</button>
+                <div id="user-display" class="message hidden" style="margin-top: 10px; font-size: 0.7rem;"></div>
+            </div>
+            <p style="margin-top: 20px; color: rgba(255,255,255,0.5); font-size: 0.9rem;">
+                Use A / D or Arrow Keys to move on Computer
+            </p>
+            <div class="credit">
+                <a href="https://www.instagram.com/adibinsheraz" target="_blank">Built by Adi</a>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/adibinsheraz" target="_blank" title="Instagram">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2"
+                            fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                    <a href="mailto:adi.binsheraz@gmail.com" title="Email">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2"
+                            fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                            </path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pause Screen -->
+        <div id="pause-screen" class="overlay hidden">
+            <h1>PAUSED</h1>
+            <div class="menu-buttons">
+                <button class="btn" onclick="game.togglePause()">RESUME</button>
+                <button class="btn" onclick="game.showStartScreen()">QUIT</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="overlay hidden">
+            <h1 class="lose">GAME OVER</h1>
+            <p class="message">Better luck next time!</p>
+            <p class="message">Final Score: <span id="final-score-lose">0</span></p>
+            <div class="menu-buttons">
+                <button class="btn" onclick="game.start(game.level)">TRY AGAIN</button>
+                <button class="btn" onclick="game.showStartScreen()">MENU</button>
+            </div>
+        </div>
+
+        <!-- Level Complete Screen -->
+        <div id="level-complete-screen" class="overlay hidden">
+            <h1 class="win">LEVEL CLEAR</h1>
+            <p class="message">You have unlocked the next level</p>
+            <div class="menu-buttons">
+                <button class="btn" onclick="game.nextLevel()">NEXT LEVEL</button>
+                <button class="btn" onclick="game.start(game.level)">TRY AGAIN</button>
+                <button class="btn" onclick="game.showStartScreen()">MENU</button>
+            </div>
+        </div>
+
+        <!-- Level Selection Screen -->
+        <div id="level-select-screen" class="overlay hidden">
+            <h1>SELECT LEVEL</h1>
+            <div id="level-grid" class="grid-container">
+                <!-- Dynamically populated -->
+            </div>
+            <button class="btn" style="margin-top: 20px;" onclick="game.showStartScreen()">BACK</button>
+        </div>
+
+        <!-- Win Screen (Final Level) -->
+        <div id="win-screen" class="overlay hidden">
+            <h1 class="win">GRAND VICTORY</h1>
+            <p class="message">Incredible! You have cleared all 200 levels!</p>
+            <p class="message">Final Score: <span id="final-score-win">0</span></p>
+            <div class="menu-buttons">
+                <button class="btn" onclick="game.start(game.level)">TRY AGAIN</button>
+                <button class="btn" onclick="game.showStartScreen()">MENU</button>
+            </div>
+        </div>
+
+        <!-- Auth Screen -->
+        <div id="auth-screen" class="overlay hidden">
+            <h1 id="auth-title">LOGIN</h1>
+            <div class="auth-box">
+                <input type="email" id="auth-email" placeholder="EMAIL" class="input-field">
+                <input type="password" id="auth-password" placeholder="PASSWORD" class="input-field">
+                <div class="menu-buttons" style="width: 100%;">
+                    <button id="primary-auth-btn" class="btn" onclick="game.handleAuth()">LOGIN</button>
+                    <button class="btn" style="background: #555;" onclick="game.toggleAuthMode(event)">GO TO
+                        SIGNUP</button>
+                </div>
+            </div>
+            <button class="btn" style="margin-top: 20px;" onclick="game.showStartScreen()">BACK</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-InPlEoUNPuoDY4vCt1UXTcadqopPlfk",
+            authDomain: "keyflow-aff06.firebaseapp.com",
+            databaseURL: "https://keyflow-aff06-default-rtdb.firebaseio.com",
+            projectId: "keyflow-aff06",
+            storageBucket: "keyflow-aff06.firebasestorage.app",
+            messagingSenderId: "1031250972121",
+            appId: "1:1031250972121:web:e1224430536843d10c5dc8",
+            measurementId: "G-03Y8Q9BMXB"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Expose to window for the game object to access
+        window.firebaseApp = app;
+        window.firebaseAuth = { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged };
+        window.firebaseDb = db;
+        window.firebaseFirestore = { doc, setDoc, getDoc, collection };
+
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW Registered!', reg))
+                    .catch(err => console.log('SW registration failed: ', err));
+            });
+        }
+    </script>
+    <script src="levels/classic.js"></script>
+    <script src="levels/modern.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

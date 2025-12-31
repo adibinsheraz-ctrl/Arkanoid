@@ -1,0 +1,14 @@
+{
+  "name": "arkanoid-master",
+  "version": "1.0.0",
+  "description": "This project is a clone of one of the most popular old games Arkanoid/Breakout ## Used technologies * Python 3.7 * Pygame ## Author - Damian Żak ## Licence The application is shared under the [MIT license](https://opensource.org/licenses/MIT).",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {}
+}
