@@ -452,10 +452,19 @@ const game = {
         }
     },
 
-    async handleAuth() {
+    async handleAuth(token) {
         const email = document.getElementById('auth-email').value;
         const password = document.getElementById('auth-password').value;
-        if (!email || !password) return alert('Enter email and password');
+        if (!email || !password) {
+            if (window.grecaptcha) window.grecaptcha.reset();
+            return alert('Enter email and password');
+        }
+
+        if (!token) {
+            // If called without token (e.g. manually), trigger recaptcha
+            if (window.grecaptcha) window.grecaptcha.execute();
+            return;
+        }
 
         try {
             if (this.authMode === 'login') {
@@ -466,6 +475,7 @@ const game = {
             this.showStartScreen();
         } catch (err) {
             alert(err.message);
+            if (window.grecaptcha) window.grecaptcha.reset();
         }
     },
 
